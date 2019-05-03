@@ -31,8 +31,10 @@ class Client(Singleton):
 
     def get_clip(self):
         return pyperclip.paste()
+
     def set_clip(self, clip):
         pyperclip.copy(clip)
+
     @staticmethod
     def _reciv_core(conn):
         joined_data = b''
@@ -42,11 +44,11 @@ class Client(Singleton):
                 joined_data += data
                 data = pickle.loads(joined_data)
                 break
-            except socket.timeout: # This work only when timeouts activated in add_client func
+            except socket.timeout: # WARNING:  This work only when timeouts activated in add_client func
                 return False
             except EOFError:
                 return False
             except pickle.UnpicklingError:
-                # print("recived part") # For debugging)
+                # print("recived part") # DEBUG print
                 continue
         return data

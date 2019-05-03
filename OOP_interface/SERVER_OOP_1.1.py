@@ -20,7 +20,7 @@ class Server(Singleton):
 
     clients = {}
     clip = None
-    old_clip = pyperclip.paste
+    old_clip = pyperclip.paste()
     client_clip = None
     request = None
     request_user = None
@@ -58,7 +58,7 @@ class Server(Singleton):
                 joined_data += data
                 data = pickle.loads(joined_data)
                 break
-            except socket.timeout: # This work only when timeouts activated in add_client func
+            except socket.timeout: # WARNING:  This work only when timeouts activated in add_client func
                 return False
             except EOFError:
                 return False
@@ -71,7 +71,3 @@ class Server(Singleton):
 
 class All_sync(Server):
     pass
-
-
-
-
