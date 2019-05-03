@@ -1,0 +1,13 @@
+# coding=utf-8
+
+from random import randint
+
+string = str()
+
+for i in range(1000):
+    string += chr(randint(48, 126))
+clip_file = open("clip", mode="w")
+clip_file.write(string)
+clip_file.close()
+print("changed")
+exit()
