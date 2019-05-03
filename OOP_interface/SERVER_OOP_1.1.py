@@ -25,6 +25,8 @@ class Server(Singleton):
     request = None
     request_user = None
 
+    controller_work_flag = False
+
     def __init__(self, ip="", port=9090, listen=1): # Create server with socket obl.
         self.sock = socket.socket()
         self.sock.bind((ip, port))
@@ -67,6 +69,25 @@ class Server(Singleton):
                 continue
         return data
 
+        def _recive_server_controller(self):
+            for i in self.user_list:
+                data = self._reciv_core(self.clients[i])
+                if not data:
+                    continue
+                if data[-1] == "clip":
+                    print("recived clip", i)
+                    self.clip = data[0]
+                    self.clip_user = i
+                elif data[-1] == "request":
+                    print("recived_request", i)
+                    self.request = data[0]
+                    self.request_user = i
+
+        def start(self):
+            pass
+
+        def stop(self):
+            pass
 
 
 class All_sync(Server):

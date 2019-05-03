@@ -52,3 +52,9 @@ class Client(Singleton):
                 # print("recived part") # DEBUG print
                 continue
         return data
+class All_sync(Client):
+    pass
+
+
+class Server_sync():
+    pass
