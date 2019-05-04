@@ -10,17 +10,16 @@ class Singleton: # All subclaes of this class is singletones
 
     def __new__(cls,*args, **kwargs):
         if cls.__obj:
-            print('get instane')
+            # print('get instane')
             return cls.__obj
-        print('New')
+        # print('New')
         cls.__obj = super(Singleton, cls).__new__(cls)
         return cls.__obj
 
 class Server(Singleton):
 
     clients = {}
-    clip = None
-    old_clip = pyperclip.paste()
+
 
     client_clip = None
     clip_user = None
@@ -33,7 +32,9 @@ class Server(Singleton):
         self.sock = socket.socket()
         self.sock.bind((ip, port))
         self.sock.listen(listen)
-        self.clip = pyperclip.paste()
+
+        self.clip = None
+        self.old_clip = pyperclip.paste()
 
     def add_client(self, timeout=1, client_timeout=0.1): # wait timeout to connect user
         self.sock.settimeout(timeout)
@@ -77,11 +78,11 @@ class Server(Singleton):
             if not data:
                 continue
             if data[-1] == "clip":
-                print("recived clip", i)
-                self.clip = data[0]
+                # print("recived clip", i)
+                self.client_clip = data[0]
                 self.clip_user = i
             elif data[-1] == "request":
-                print("recived_request", i)
+                # print("recived_request", i)
                 self.request = data[0]
                 self.request_user = i
 
@@ -93,7 +94,7 @@ class Server(Singleton):
                     self.recive_server_controller()
                     sleep(self.timeout)
 
-            thread = threading.Thread(target=rec())
+            thread = threading.Thread(target=rec)
             thread.daemon = True
             thread.start()
 
@@ -108,12 +109,31 @@ class Server_sync(Server):
             self.clip = self.get_clip()
             if self.old_clip != self.clip:
                 for i in self.clients:
-                    self.clients[i].send(pickle.dumps(self.clip))
+                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
                 self.old_clip = self.clip
 
 
 
 class All_sync(Server):
-    pass
+        def start(self, timeout):
+            super().start(timeout)
+            while self.controller_work_flag:
+                self.clip = self.get_clip()
+                if self.old_clip != self.clip:
+                    for i in self.clients:
+                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
+                    self.old_clip = self.clip
+                if self.client_clip:
+                    self.old_clip = self.client_clip
+                    self.clip = self.client_clip
+                    self.set_clip(self.client_clip)
+                    for i in self.clients.keys().remove(self.clip_user):
+                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
+
+
+
 class All_to_All(Server):
-    pass
+        def start(self, timeout):
+            super().start(timeout)
+            while self.controller_work_flag:
+                pass
