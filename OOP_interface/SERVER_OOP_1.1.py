@@ -167,6 +167,13 @@ class All_to_All(Server):
         def get_usr_clip(self, name):
             self.clients[name].send(("clip", "request"))
 
+            while not self.client_clip: sleep(0.1)
+
+            if self.clip_user == self.request:
+                self.set_clip(self.client_clip)
+                client_clip, clip_user, request, request_user = None
+
+
         def start(self, timeout):
             super().start(timeout)
             while self.controller_work_flag:
@@ -178,5 +185,6 @@ class All_to_All(Server):
 
                         while not self.client_clip: sleep(0.1)
 
-                        self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
-                        client_clip, clip_user, request, request_user = None
+                        if self.clip_user == self.request:
+                            self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
+                            client_clip, clip_user, request, request_user = None
