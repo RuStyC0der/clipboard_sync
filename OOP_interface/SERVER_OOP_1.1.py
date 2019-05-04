@@ -16,7 +16,13 @@ class Singleton: # All subclaes of this class is singletones
         cls.__obj = super(Singleton, cls).__new__(cls)
         return cls.__obj
 
-class Server(Singleton):
+
+class Fake_sock_obj(Singleton):
+    def __init__(self, send,recive):
+        self.send = send
+        self.recv = recive
+
+class Server():
 
     clients = {}
 
@@ -28,10 +34,14 @@ class Server(Singleton):
 
     controller_work_flag = False
 
-    def __init__(self, ip="", port=9090, listen=1): # Create server with socket obl.
+    def __init__(self, nickname, ip="", port=9090, listen=1): # Create server with socket obl.
         self.sock = socket.socket()
         self.sock.bind((ip, port))
         self.sock.listen(listen)
+
+        self.nickname = nickname
+
+        self.clients[nickname] = Fake_sock_obj(self.fake_send, self.fake_recive)
 
         self.clip = None
         self.old_clip = pyperclip.paste()
@@ -101,6 +111,16 @@ class Server(Singleton):
         def stop(self):
             self.controller_work_flag = False
 
+        def fake_send(self,obj):
+            if pickle.loads(obj)[-1] == "request":
+                self.clip = self.get_clip()
+                self.clip_user = self.nickname
+            elif pickle.loads(obj)[-1] == "clip":
+                self.set_clip(pickle.loads(obj)[0])
+
+        def fake_recive():
+            pass
+
 
 class Server_sync(Server):
     def start(self, timeout):
@@ -136,4 +156,13 @@ class All_to_All(Server):
         def start(self, timeout):
             super().start(timeout)
             while self.controller_work_flag:
-                pass
+                if self.request:
+                    if self.request == "user_list":
+                        self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
+                    else:
+                        self.clients[self.request].send(pickle.dumps((True, "request")))
+
+                        while not self.client_clip: sleep(0.1)
+
+                        self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
+                        client_clip, clip_user, request, request_user = None
