@@ -29,7 +29,7 @@ class Client(Singleton):
 
 
 
-    def __init__(self, ip, nickname,port=9090):
+    def __init__(self,nickname, ip, port=9090):
         self.sock = socket.socket()
         self.sock.connect((ip, port))
         self.sock.send(pickle.dumps(nickname))
@@ -117,4 +117,10 @@ class All_to_All(Client):
     def start(self, timeout):
         super().start(timeout)
         while self.controller_work_flag:
-            pass
+            if self.request:
+                if self.request == "clip":
+                    self.sock.send(pickle.dumps((self.get_clip(), "clip")))
+            if self.recived_clip:
+                self.set_clip(self.recived_clip)
+                self.recived_clip = False
+        
