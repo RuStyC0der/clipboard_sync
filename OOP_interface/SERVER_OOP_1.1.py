@@ -21,7 +21,9 @@ class Server(Singleton):
     clients = {}
     clip = None
     old_clip = pyperclip.paste()
+
     client_clip = None
+    clip_user = None
     request = None
     request_user = None
 
@@ -69,26 +71,49 @@ class Server(Singleton):
                 continue
         return data
 
-        def _recive_server_controller(self):
-            for i in self.user_list:
-                data = self._reciv_core(self.clients[i])
-                if not data:
-                    continue
-                if data[-1] == "clip":
-                    print("recived clip", i)
-                    self.clip = data[0]
-                    self.clip_user = i
-                elif data[-1] == "request":
-                    print("recived_request", i)
-                    self.request = data[0]
-                    self.request_user = i
+    def _recive_server_controller(self):
+        for i in self.user_list:
+            data = self._reciv_core(self.clients[i])
+            if not data:
+                continue
+            if data[-1] == "clip":
+                print("recived clip", i)
+                self.clip = data[0]
+                self.clip_user = i
+            elif data[-1] == "request":
+                print("recived_request", i)
+                self.request = data[0]
+                self.request_user = i
 
-        def start(self):
-            pass
+        def start(self, timeout=0.1):
+            self.controller_work_flag = True
+            self.timeout = timeout
+            def rec():
+                while self.controller_work_flag:
+                    self.recive_server_controller()
+                    sleep(self.timeout)
+
+            thread = threading.Thread(target=rec())
+            thread.daemon = True
+            thread.start()
 
         def stop(self):
-            pass
+            self.controller_work_flag = False
+
+
+class Server_sync(Server):
+    def start(self, timeout):
+        super().start(timeout)
+        while self.controller_work_flag:
+            self.clip = self.get_clip()
+            if self.old_clip != self.clip:
+                for i in self.clients:
+                    self.clients[i].send(pickle.dumps(self.clip))
+                self.old_clip = self.clip
+
 
 
 class All_sync(Server):
+    pass
+class All_to_All(Server):
     pass

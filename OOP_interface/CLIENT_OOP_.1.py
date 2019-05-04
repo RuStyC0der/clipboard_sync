@@ -52,9 +52,21 @@ class Client(Singleton):
                 # print("recived part") # DEBUG print
                 continue
         return data
+
+    def controller(self):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+class Server_sync():
+    pass
+
 class All_sync(Client):
     pass
 
-
-class Server_sync():
+class All_to_All(Client):
     pass
