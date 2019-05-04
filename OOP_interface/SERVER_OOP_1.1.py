@@ -5,7 +5,7 @@ import pyperclip
 import threading
 from time import sleep
 
-class Singleton: # All subclaes of this class is singletones
+class Singleton: # All subclaes of this class is a singletones
     __obj = False  # Private class variable.
 
     def __new__(cls,*args, **kwargs):
@@ -111,6 +111,14 @@ class Server():
         def stop(self):
             self.controller_work_flag = False
 
+        def destroy(self):
+            self.controller_work_flag = False
+            sleep(0.1)
+            self.sock.close()
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.__del__()
+
+
         def fake_send(self,obj):
             if pickle.loads(obj)[-1] == "request":
                 self.clip = self.get_clip()
@@ -120,6 +128,8 @@ class Server():
 
         def fake_recive():
             pass
+
+
 
 
 class Server_sync(Server):
@@ -153,6 +163,10 @@ class All_sync(Server):
 
 
 class All_to_All(Server):
+
+        def get_usr_clip(self, name):
+            self.clients[name].send(("clip", "request"))
+
         def start(self, timeout):
             super().start(timeout)
             while self.controller_work_flag:
@@ -160,7 +174,7 @@ class All_to_All(Server):
                     if self.request == "user_list":
                         self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
                     else:
-                        self.clients[self.request].send(pickle.dumps((True, "request")))
+                        self.clients[self.request].send(pickle.dumps(("clip", "request")))
 
                         while not self.client_clip: sleep(0.1)
 

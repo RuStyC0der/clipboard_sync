@@ -90,6 +90,13 @@ class Client(Singleton):
         def stop(self):
             self.controller_work_flag = False
 
+        def destroy(self):
+            self.controller_work_flag = False
+            sleep(0.1)
+            self.sock.close()
+            self.sock.shutdown(socket.SHUT_RDWR)
+            self.__del__()
+
 class Server_sync():
     def start(self, timeout):
         super().start(timeout)
@@ -114,6 +121,14 @@ class All_sync(Client):
                 self.recived_clip = False
 
 class All_to_All(Client):
+
+    def refresh_user_list(self):
+        self.sock.send(pickle.dumps((True, "user_list")))
+
+    def get_usr_clip(self, name):
+        self.clients[name].send(("clip", "request"))
+
+
     def start(self, timeout):
         super().start(timeout)
         while self.controller_work_flag:
@@ -123,4 +138,3 @@ class All_to_All(Client):
             if self.recived_clip:
                 self.set_clip(self.recived_clip)
                 self.recived_clip = False
-        
