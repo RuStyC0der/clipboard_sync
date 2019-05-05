@@ -83,7 +83,7 @@ class Server():
         return data
 
     def _recive_server_controller(self):
-        for i in self.user_list:
+        for i in self.clients:
             data = self._reciv_core(self.clients[i])
             if not data:
                 continue
@@ -96,38 +96,36 @@ class Server():
                 self.request = data[0]
                 self.request_user = i
 
-        def start(self, timeout=0.1):
-            self.controller_work_flag = True
-            self.timeout = timeout
-            def rec():
-                while self.controller_work_flag:
-                    self.recive_server_controller()
-                    sleep(self.timeout)
+    def start(self, timeout=0.1):
+        self.controller_work_flag = True
+        self.timeout = timeout
+        def rec():
+            while self.controller_work_flag:
+                self._recive_server_controller()
+                sleep(self.timeout)
 
-            thread = threading.Thread(target=rec)
-            thread.daemon = True
-            thread.start()
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 
-        def stop(self):
-            self.controller_work_flag = False
+    def stop(self):
+        self.controller_work_flag = False
 
-        def destroy(self):
-            self.controller_work_flag = False
-            sleep(0.1)
-            self.sock.close()
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.__del__()
+    def destroy(self):
+        self.controller_work_flag = False
+        sleep(0.1)
+        self.sock.close()
 
 
-        def fake_send(self,obj):
-            if pickle.loads(obj)[-1] == "request":
-                self.clip = self.get_clip()
-                self.clip_user = self.nickname
-            elif pickle.loads(obj)[-1] == "clip":
-                self.set_clip(pickle.loads(obj)[0])
+    def fake_send(self,obj):
+        if pickle.loads(obj)[-1] == "request":
+            self.clip = self.get_clip()
+            self.clip_user = self.nickname
+        elif pickle.loads(obj)[-1] == "clip":
+            self.set_clip(pickle.loads(obj)[0])
 
-        def fake_recive():
-            pass
+    def fake_recive(self,size):
+        raise socket.timeout
 
 
 
@@ -135,31 +133,37 @@ class Server():
 class Server_sync(Server):
     def start(self, timeout):
         super().start(timeout)
-        while self.controller_work_flag:
-            self.clip = self.get_clip()
-            if self.old_clip != self.clip:
-                for i in self.clients:
-                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
-                self.old_clip = self.clip
-
-
-
-class All_sync(Server):
-        def start(self, timeout):
-            super().start(timeout)
+        def rec():
             while self.controller_work_flag:
                 self.clip = self.get_clip()
                 if self.old_clip != self.clip:
                     for i in self.clients:
                         self.clients[i].send(pickle.dumps((self.clip, "clip")))
                     self.old_clip = self.clip
-                if self.client_clip:
-                    self.old_clip = self.client_clip
-                    self.clip = self.client_clip
-                    self.set_clip(self.client_clip)
-                    for i in self.clients.keys().remove(self.clip_user):
-                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 
+
+class All_sync(Server):
+        def start(self, timeout):
+            super().start(timeout)
+            def rec():
+                while self.controller_work_flag:
+                    self.clip = self.get_clip()
+                    if self.old_clip != self.clip:
+                        for i in self.clients:
+                            self.clients[i].send(pickle.dumps((self.clip, "clip")))
+                        self.old_clip = self.clip
+                    if self.client_clip:
+                        self.old_clip = self.client_clip
+                        self.clip = self.client_clip
+                        self.set_clip(self.client_clip)
+                        for i in self.clients.keys().remove(self.clip_user):
+                            self.clients[i].send(pickle.dumps((self.clip, "clip")))
+            thread = threading.Thread(target=rec)
+            thread.daemon = True
+            thread.start()
 
 
 class All_to_All(Server):
@@ -176,15 +180,28 @@ class All_to_All(Server):
 
         def start(self, timeout):
             super().start(timeout)
-            while self.controller_work_flag:
-                if self.request:
-                    if self.request == "user_list":
-                        self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
-                    else:
-                        self.clients[self.request].send(pickle.dumps(("clip", "request")))
+            def rec():
+                while self.controller_work_flag:
+                    if self.request:
+                        if self.request == "user_list":
+                            self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
+                        else:
+                            self.clients[self.request].send(pickle.dumps(("clip", "request")))
 
-                        while not self.client_clip: sleep(0.1)
+                            while not self.client_clip: sleep(0.1)
 
-                        if self.clip_user == self.request:
-                            self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
-                            client_clip, clip_user, request, request_user = None
+                            if self.clip_user == self.request:
+                                self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
+                                client_clip, clip_user, request, request_user = None
+            thread = threading.Thread(target=rec)
+            thread.daemon = True
+            thread.start()
+if __name__ == '__main__':
+    a = All_to_All("miller")
+    a.start(0.1)
+    print("start")
+    sleep(2)
+    a.stop()
+    print("StopIteration")
+    a.destroy()
+    print("destroy")

@@ -100,25 +100,33 @@ class Client(Singleton):
 class Server_sync():
     def start(self, timeout):
         super().start(timeout)
-        while self.controller_work_flag:
-            if self.recived_clip:
-                self.set_clip(self.recived_clip)
-                self.recived_clip = False
-
+        def rec():
+            while self.controller_work_flag:
+                if self.recived_clip:
+                    self.set_clip(self.recived_clip)
+                    self.recived_clip = False
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 
 class All_sync(Client):
     def start(self, timeout):
         super().start(timeout)
-        while self.controller_work_flag:
-            self.clip = self.get_clip()
-            if self.clip != self.old_clip:
-                self.old_clip = self.clip
-                self.sock.send(pickle.dumps((self.clip, "clip")))
-            if self.recived_clip:
-                self.set_clip(self.recived_clip)
-                self.old_clip = self.recived_clip
-                self.clip = self.recived_clip
-                self.recived_clip = False
+        def rec():
+            while self.controller_work_flag:
+                self.clip = self.get_clip()
+                if self.clip != self.old_clip:
+                    self.old_clip = self.clip
+                    self.sock.send(pickle.dumps((self.clip, "clip")))
+                if self.recived_clip:
+                    self.set_clip(self.recived_clip)
+                    self.old_clip = self.recived_clip
+                    self.clip = self.recived_clip
+                    self.recived_clip = False
+
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 
 class All_to_All(Client):
 
@@ -131,10 +139,15 @@ class All_to_All(Client):
 
     def start(self, timeout):
         super().start(timeout)
-        while self.controller_work_flag:
-            if self.request:
-                if self.request == "clip":
-                    self.sock.send(pickle.dumps((self.get_clip(), "clip")))
-            if self.recived_clip:
-                self.set_clip(self.recived_clip)
-                self.recived_clip = False
+        def rec():
+            while self.controller_work_flag:
+                if self.request:
+                    if self.request == "clip":
+                        self.sock.send(pickle.dumps((self.get_clip(), "clip")))
+                if self.recived_clip:
+                    self.set_clip(self.recived_clip)
+                    self.recived_clip = False
+
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
