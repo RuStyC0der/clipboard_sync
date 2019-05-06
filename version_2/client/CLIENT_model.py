@@ -67,7 +67,7 @@ class Client(Singleton):
     def _recive_client_controller(self):
         data = self._reciv_core(self.sock)
         if not data:
-            continue
+            return
         if data[-1] == "clip":
             self.recived_clip = data[0]
         elif data[-1] == "request":

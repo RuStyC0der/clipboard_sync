@@ -5,7 +5,7 @@ import pyperclip
 import threading
 from time import sleep
 
-class Singleton: # All subclaes of this class is a singletones
+class _Singleton: # All subclaes of this class is a singletones
     __obj = False  # Private class variable.
 
     def __new__(cls,*args, **kwargs):
@@ -13,16 +13,18 @@ class Singleton: # All subclaes of this class is a singletones
             # print('get instane')
             return cls.__obj
         # print('New')
-        cls.__obj = super(Singleton, cls).__new__(cls)
+        cls.__obj = super(_Singleton, cls).__new__(cls)
         return cls.__obj
 
 
-class Fake_sock_obj(Singleton):
+class _Fake_sock_obj(_Singleton):
     def __init__(self, send,recive):
         self.send = send
         self.recv = recive
 
 class Server():
+
+    work_mode = None
 
     clients = {}
 
@@ -41,7 +43,7 @@ class Server():
 
         self.nickname = nickname
 
-        self.clients[nickname] = Fake_sock_obj(self.fake_send, self.fake_recive)
+        self.clients[nickname] = _Fake_sock_obj(self.fake_send, self.fake_recive)
 
         self.clip = None
         self.old_clip = pyperclip.paste()
@@ -54,6 +56,7 @@ class Server():
         except:
             return
         name = pickle.loads(conn.recv(1024))
+        # conn.send(pickle.dumps(self.work_mode))
         conn.settimeout(client_timeout)
         self.clients[name] = conn
         return (name, addr)
@@ -131,6 +134,9 @@ class Server():
 
 
 class Server_sync(Server):
+
+    work_mode = "server_sync"
+
     def start(self, timeout):
         super().start(timeout)
         def rec():
@@ -146,56 +152,62 @@ class Server_sync(Server):
 
 
 class All_sync(Server):
-        def start(self, timeout):
-            super().start(timeout)
-            def rec():
-                while self.controller_work_flag:
-                    self.clip = self.get_clip()
-                    if self.old_clip != self.clip:
-                        for i in self.clients:
-                            self.clients[i].send(pickle.dumps((self.clip, "clip")))
-                        self.old_clip = self.clip
-                    if self.client_clip:
-                        self.old_clip = self.client_clip
-                        self.clip = self.client_clip
-                        self.set_clip(self.client_clip)
-                        for i in self.clients.keys().remove(self.clip_user):
-                            self.clients[i].send(pickle.dumps((self.clip, "clip")))
-            thread = threading.Thread(target=rec)
-            thread.daemon = True
-            thread.start()
+
+    work_mode = "all_sync"
+
+
+    def start(self, timeout):
+        super().start(timeout)
+        def rec():
+            while self.controller_work_flag:
+                self.clip = self.get_clip()
+                if self.old_clip != self.clip:
+                    for i in self.clients:
+                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
+                    self.old_clip = self.clip
+                if self.client_clip:
+                    self.old_clip = self.client_clip
+                    self.clip = self.client_clip
+                    self.set_clip(self.client_clip)
+                    for i in self.clients.keys().remove(self.clip_user):
+                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 
 
 class All_to_All(Server):
 
-        def get_usr_clip(self, name):
-            self.clients[name].send(("clip", "request"))
+    work_mode = "all_to_all"
 
-            while not self.client_clip: sleep(0.1)
+    def get_usr_clip(self, name):
+        self.clients[name].send(("clip", "request"))
 
-            if self.clip_user == self.request:
-                self.set_clip(self.client_clip)
-                client_clip, clip_user, request, request_user = None
+        while not self.client_clip: sleep(0.1)
+
+        if self.clip_user == self.request:
+            self.set_clip(self.client_clip)
+            client_clip, clip_user, request, request_user = None
 
 
-        def start(self, timeout):
-            super().start(timeout)
-            def rec():
-                while self.controller_work_flag:
-                    if self.request:
-                        if self.request == "user_list":
-                            self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
-                        else:
-                            self.clients[self.request].send(pickle.dumps(("clip", "request")))
+    def start(self, timeout):
+        super().start(timeout)
+        def rec():
+            while self.controller_work_flag:
+                if self.request:
+                    if self.request == "user_list":
+                        self.clients[self.request_user].send(pickle.dumps((self.clients.values(), "user_list")))
+                    else:
+                        self.clients[self.request].send(pickle.dumps(("clip", "request")))
 
-                            while not self.client_clip: sleep(0.1)
+                        while not self.client_clip: sleep(0.1)
 
-                            if self.clip_user == self.request:
-                                self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
-                                client_clip, clip_user, request, request_user = None
-            thread = threading.Thread(target=rec)
-            thread.daemon = True
-            thread.start()
+                        if self.clip_user == self.request:
+                            self.clients[self.request_user].send(pickle.dumps((self.client_clip, "clip")))
+                            client_clip, clip_user, request, request_user = None
+        thread = threading.Thread(target=rec)
+        thread.daemon = True
+        thread.start()
 if __name__ == '__main__':
     a = All_to_All("miller")
     a.start(0.1)
