@@ -47,13 +47,6 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="port_input"/>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="nickname_l">
-       <property name="text">
-        <string>nickname</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="nickname_input"/>
      </item>
@@ -67,6 +60,35 @@
      <item row="0" column="1">
       <widget class="QLineEdit" name="ip_input"/>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="nickname_l">
+       <property name="text">
+        <string>nickname</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>140</y>
+      <width>211</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="1">
+      <widget class="QComboBox" name="mode_box"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="mode_l">
+       <property name="text">
+        <string>mode       </string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -79,8 +101,25 @@
      <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menumenu">
+    <property name="title">
+     <string>Menu</string>
+    </property>
+    <addaction name="actionquit"/>
+   </widget>
+   <addaction name="menumenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionquit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionhelp">
+   <property name="text">
+    <string>help</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

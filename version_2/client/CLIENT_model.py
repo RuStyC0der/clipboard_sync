@@ -97,7 +97,7 @@ class Client(Singleton):
             self.sock.shutdown(socket.SHUT_RDWR)
             self.__del__()
 
-class Server_sync():
+class Server_sync(Client):
     def start(self, timeout):
         super().start(timeout)
         def rec():
