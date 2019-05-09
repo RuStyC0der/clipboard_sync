@@ -19,6 +19,9 @@ class Singleton: # All subclaes of this class is singletones
 
 class Client(Singleton):
 
+    work_mode = None
+
+
     user_list = None
 
     recived_clip = None
@@ -98,6 +101,10 @@ class Client(Singleton):
             self.__del__()
 
 class Server_sync(Client):
+
+    work_mode = "server_sync"
+
+
     def start(self, timeout):
         super().start(timeout)
         def rec():
@@ -110,6 +117,9 @@ class Server_sync(Client):
         thread.start()
 
 class All_sync(Client):
+
+    work_mode = "all_sync"
+
     def start(self, timeout):
         super().start(timeout)
         def rec():
@@ -129,6 +139,8 @@ class All_sync(Client):
         thread.start()
 
 class All_to_All(Client):
+
+    work_mode = "all_to_all"
 
     def refresh_user_list(self):
         self.sock.send(pickle.dumps((True, "user_list")))
@@ -151,3 +163,5 @@ class All_to_All(Client):
         thread = threading.Thread(target=rec)
         thread.daemon = True
         thread.start()
+
+        print(len(input(">>>").split(" ")))
