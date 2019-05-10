@@ -22,7 +22,7 @@ class GUI(QMainWindow):
         self.ip_input.setValidator(QRegularExpressionValidator(QRegularExpression(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')))
         self.connect_btn.clicked.connect(self.key)
 
-        self.lw = QtWidgets.QListView(self)
+        self.lw = QtWidgets.QListWidget(self)
         self.refresh_btn = QtWidgets.QPushButton("R",self)
         self.get_btn = QtWidgets.QPushButton("Get clip",self)
 
@@ -33,6 +33,9 @@ class GUI(QMainWindow):
         self.lw.show()
         self.refresh_btn.show()
         self.get_btn.show()
+
+        self.refresh_btn.clicked.connect(self.refresh)
+        self.get_btn.clicked.connect(self.get_clip)
 
         self.show()
 
@@ -64,6 +67,21 @@ class GUI(QMainWindow):
         self.resize(500, 280)
 
         return CLIENT_model.All_to_All(ip=ip, nickname=nickname,port=port)
+
+
+    def refresh(self):
+        self.model.refresh_user_list()
+        self.lw.clear()
+        self.lw.addItems(list(self.model.user_list.keys()))
+
+    def get_clip(self):
+        user = self.lw.currentItem()
+        self.model.get_usr_clip(user)
+
+    def closeEvent(self, ev):
+        if hasattr(self, "model"):
+            self.model.destroy()
+        ev.accept()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

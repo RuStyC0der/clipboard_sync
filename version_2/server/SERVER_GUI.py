@@ -19,7 +19,7 @@ class GUI(QMainWindow):
         self.port_input.setValidator(QIntValidator())
         self.start_btn.clicked.connect(self.key)
 
-        self.lw = QtWidgets.QListView(self)
+        self.lw = QtWidgets.QListWidget(self)
         self.refresh_btn = QtWidgets.QPushButton("R",self)
         self.get_btn = QtWidgets.QPushButton("Get clip",self)
 
@@ -30,6 +30,10 @@ class GUI(QMainWindow):
         self.lw.show()
         self.refresh_btn.show()
         self.get_btn.show()
+
+        self.refresh_btn.clicked.connect(self.refresh)
+        self.get_btn.clicked.connect(self.get_clip)
+
 
         self.show()
     def key(self):
@@ -60,6 +64,14 @@ class GUI(QMainWindow):
 
         return SERVER_model.All_to_All(nickname=nickname,port=port)
 
+
+    def refresh(self):
+        self.lw.clear()
+        self.lw.addItems(list(self.model.user_list.keys()))
+
+    def get_clip(self):
+        user = self.lw.currentItem()
+        self.model.get_usr_clip(user)
 
 
     def closeEvent(self, ev):
