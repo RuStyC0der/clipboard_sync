@@ -1,12 +1,11 @@
 import sys
-from PyQt5.QtCore import QT_TR_NOOP, QTranslator, QRegularExpression
+from PyQt5.QtCore import QRegularExpression
 from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QApplication
+from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtGui import QIntValidator, QRegularExpressionValidator
-import CLIENT_model
 
 import CLIENT_model
+from time import sleep
 
 
 
@@ -71,6 +70,7 @@ class GUI(QMainWindow):
 
     def refresh(self):
         self.model.refresh_user_list()
+        sleep(0.5)
         self.lw.clear()
         self.lw.addItems(list(self.model.user_list.keys()))
 

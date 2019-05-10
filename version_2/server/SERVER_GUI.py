@@ -1,10 +1,8 @@
 import sys
-from PyQt5.QtCore import QT_TR_NOOP, QTranslator
+from PyQt5.QtCore import QRegularExpression
 from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QWidget, QMainWindow, QMessageBox, QApplication
+from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtGui import QIntValidator, QRegularExpressionValidator
-import re
 
 import SERVER_model
 
