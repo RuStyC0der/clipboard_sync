@@ -1,23 +1,12 @@
 # coding=utf-8
-# from sys import exit
-from time import sleep
 import socket
 import pickle
 import pyperclip
 import threading
+from time import sleep
 
-class Singleton: # All subclaes of this class is singletones
-    __obj = False  # Private class variable.
 
-    def __new__(cls,*args, **kwargs):
-        if cls.__obj:
-            print('get instane')
-            return cls.__obj
-        print('New')
-        cls.__obj = super(Singleton, cls).__new__(cls)
-        return cls.__obj
-
-class Client(Singleton):
+class Client():
 
     work_mode = None
 
@@ -34,6 +23,7 @@ class Client(Singleton):
 
     def __init__(self,nickname, ip, port=9090):
         self.sock = socket.socket()
+        self.sock.settimeout(5)
         self.sock.connect((ip, port))
         self.sock.send(pickle.dumps(nickname))
         self.sock.settimeout(0.1)
@@ -164,4 +154,5 @@ class All_to_All(Client):
         thread.daemon = True
         thread.start()
 
-        print(len(input(">>>").split(" ")))
+if __name__ == '__main__':
+    pass

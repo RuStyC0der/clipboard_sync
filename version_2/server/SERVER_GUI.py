@@ -32,6 +32,7 @@ class GUI(QMainWindow):
         self.refresh_btn.clicked.connect(self.refresh)
         self.get_btn.clicked.connect(self.get_clip)
 
+        self.setFixedSize(self.width(), self.height())
 
         self.show()
     def key(self):
@@ -45,15 +46,25 @@ class GUI(QMainWindow):
             delattr(self, "model")
             self.start_btn.setText("Start server")
         else:
+
+            nick = self.nickname_input.text()
+            port = self.port_input.text()
+            # ip = self.ip_input.text()
+            if not port or not nick:
+                self.statusBar().showMessage("input error")
+                return
+            try:
+                self.model = self.modes[self.mode_box.currentIndex()](nickname=nick,port=int(port))
+                self.statusBar().showMessage("sucess started")
+            except Exception as e:
+                self.statusBar().showMessage(str(e))
+                return
+
+            self.start_btn.setText("Stop server")
             self.nickname_input.setEnabled(False)
             self.port_input.setEnabled(False)
             self.mode_box.setEnabled(False)
             # self.nickname_input.setEnabled(False)
-            nick = self.nickname_input.text()
-            port = int(self.port_input.text())
-            # ip = self.ip_input.text()
-            self.model = self.modes[self.mode_box.currentIndex()](nickname=nick,port=port)
-            self.start_btn.setText("Stop server")
 
     def ata_mod(self,nickname,port):
 

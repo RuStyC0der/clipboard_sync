@@ -5,19 +5,8 @@ import pyperclip
 import threading
 from time import sleep
 
-class _Singleton: # All subclaes of this class is a singletones
-    __obj = False  # Private class variable.
 
-    def __new__(cls,*args, **kwargs):
-        if cls.__obj:
-            # print('get instane')
-            return cls.__obj
-        # print('New')
-        cls.__obj = super(_Singleton, cls).__new__(cls)
-        return cls.__obj
-
-
-class _Fake_sock_obj(_Singleton):
+class _Fake_sock_obj():
     def __init__(self, send,recive):
         self.send = send
         self.recv = recive
@@ -43,7 +32,7 @@ class Server():
 
         self.nickname = nickname
 
-        self.clients[nickname] = _Fake_sock_obj(self.fake_send, self.fake_recive)
+        self.clients[nickname] = _Fake_sock_obj(self._fake_send, self._fake_recive)
 
         self.clip = None
         self.old_clip = pyperclip.paste()
@@ -120,18 +109,15 @@ class Server():
         self.sock.close()
 
 
-    def fake_send(self,obj):
+    def _fake_send(self,obj):
         if pickle.loads(obj)[-1] == "request":
             self.clip = self.get_clip()
             self.clip_user = self.nickname
         elif pickle.loads(obj)[-1] == "clip":
             self.set_clip(pickle.loads(obj)[0])
 
-    def fake_recive(self,size):
+    def _fake_recive(self,size):
         raise socket.timeout
-
-
-
 
 class Server_sync(Server):
 

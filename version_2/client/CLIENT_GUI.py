@@ -20,6 +20,7 @@ class GUI(QMainWindow):
         self.port_input.setValidator(QIntValidator())
         self.ip_input.setValidator(QRegularExpressionValidator(QRegularExpression(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')))
         self.connect_btn.clicked.connect(self.key)
+        self.actionquit.triggered.connect(self.close)
 
         self.lw = QtWidgets.QListWidget(self)
         self.refresh_btn = QtWidgets.QPushButton("R",self)
@@ -29,12 +30,15 @@ class GUI(QMainWindow):
         self.refresh_btn.setGeometry(420,200,50,27)
         self.get_btn.setGeometry(250,200,150,27)
 
+
         self.lw.show()
         self.refresh_btn.show()
         self.get_btn.show()
 
         self.refresh_btn.clicked.connect(self.refresh)
         self.get_btn.clicked.connect(self.get_clip)
+
+        self.setFixedSize(self.width(), self.height())
 
         self.show()
 
@@ -47,17 +51,28 @@ class GUI(QMainWindow):
             self.resize(230, 280)
             self.model.destroy()
             delattr(self, "model")
-            self.start_btn.setText("Start server")
+            self.connect_btn.setText("Start server")
         else:
+
+            nick = self.nickname_input.text()
+            port = self.port_input.text()
+            ip = self.ip_input.text()
+            if not port or not ip or not nick:
+                self.statusBar().showMessage("input error")
+                return
+            try:
+                self.model = self.modes[self.mode_box.currentIndex()](nickname=nick,port=int(port), ip=ip)
+                self.statusBar().showMessage("sucess connected")
+            except Exception as e:
+                self.statusBar().showMessage(str(e))
+                return
+
+            self.connect_btn.setText("Disconnect")
             self.nickname_input.setEnabled(False)
             self.port_input.setEnabled(False)
             self.mode_box.setEnabled(False)
             self.ip_input.setEnabled(False)
-            nick = self.nickname_input.text()
-            port = int(self.port_input.text())
-            ip = self.ip_input.text()
-            self.model = self.modes[self.mode_box.currentIndex()](nickname=nick,port=port, ip=ip)
-            self.start_btn.setText("Stop server")
+
 
 
     def ata_mod(self,nickname,port, ip):
