@@ -6,11 +6,17 @@ from PyQt5.QtGui import QIntValidator, QRegularExpressionValidator
 
 import SERVER_model
 
+
+
+
 class GUI(QMainWindow):
     def __init__(self, parent=None):
         super(GUI, self).__init__(parent)
 
         uic.loadUi("SERVER_GUI.ui", self)
+        self.setWindowTitle("Server")
+        self.setFixedSize(self.width(), self.height())
+
 
         self.modes = [SERVER_model.Server_sync, SERVER_model.All_sync, self.ata_mod]
         self.mode_box.addItems(["server", "all", "All_to_All"])
@@ -32,7 +38,6 @@ class GUI(QMainWindow):
         self.refresh_btn.clicked.connect(self.refresh)
         self.get_btn.clicked.connect(self.get_clip)
 
-        self.setFixedSize(self.width(), self.height())
 
         self.show()
     def key(self):
@@ -69,18 +74,22 @@ class GUI(QMainWindow):
     def ata_mod(self,nickname,port):
 
 
-        self.resize(500, 280)
+        self.setFixedSize(500, 280)
 
         return SERVER_model.All_to_All(nickname=nickname,port=port)
 
 
     def refresh(self):
         self.lw.clear()
-        self.lw.addItems(list(self.model.user_list.keys()))
+        self.lw.addItems(list(self.model.clients.keys()))
 
     def get_clip(self):
-        user = self.lw.currentItem()
-        self.model.get_usr_clip(user)
+        user = self.lw.currentItem().text()
+        if user:
+            self.model.get_usr_clip(user)
+        else:
+            self.statusBar().showMessage("No choiced")
+            return
 
 
     def closeEvent(self, ev):

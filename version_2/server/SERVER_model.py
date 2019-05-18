@@ -109,9 +109,10 @@ class Server():
         self.sock.close()
 
 
+
     def _fake_send(self,obj):
         if pickle.loads(obj)[-1] == "request":
-            self.clip = self.get_clip()
+            self.client_clip = self.get_clip()
             self.clip_user = self.nickname
         elif pickle.loads(obj)[-1] == "clip":
             self.set_clip(pickle.loads(obj)[0])
@@ -167,7 +168,7 @@ class All_to_All(Server):
     work_mode = "all_to_all"
 
     def get_usr_clip(self, name):
-        self.clients[name].send(("clip", "request"))
+        self.clients[name].send(pickle.dumps(("clip", "request")))
 
         while not self.client_clip: sleep(0.1)
 
@@ -176,7 +177,7 @@ class All_to_All(Server):
             client_clip, clip_user, request, request_user = None
 
 
-    def start(self, timeout):
+    def start(self, timeout=0.1):
         super().start(timeout)
         def rec():
             while self.controller_work_flag:
@@ -197,10 +198,10 @@ class All_to_All(Server):
 if __name__ == '__main__':
     a = All_to_All("miller")
     print(a)
-    # a.start(0.1)
+    a.start(0.1)
     # print("start")
     # sleep(2)
     # a.stop()
     # print("StopIteration")
-    # a.destroy()
+    a.destroy()
     # print("destroy")

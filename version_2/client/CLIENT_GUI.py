@@ -14,6 +14,7 @@ class GUI(QMainWindow):
         super(GUI, self).__init__(parent)
 
         uic.loadUi("CLIENT_GUI.ui", self)
+        self.setWindowTitle("Client")
 
         self.modes = [CLIENT_model.Server_sync, CLIENT_model.All_sync, self.ata_mod]
         self.mode_box.addItems(["server", "all", "All_to_All"])

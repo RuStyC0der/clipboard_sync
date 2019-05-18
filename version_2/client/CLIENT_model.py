@@ -87,8 +87,6 @@ class Client():
             self.controller_work_flag = False
             sleep(0.1)
             self.sock.close()
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.__del__()
 
 class Server_sync(Client):
 
@@ -139,7 +137,7 @@ class All_to_All(Client):
         self.clients[name].send(("clip", "request"))
 
 
-    def start(self, timeout):
+    def start(self, timeout=0.1):
         super().start(timeout)
         def rec():
             while self.controller_work_flag:
@@ -155,4 +153,7 @@ class All_to_All(Client):
         thread.start()
 
 if __name__ == '__main__':
-    pass
+    a = All_to_All("miller")
+    print(a)
+    a.start()
+    a.destroy()
