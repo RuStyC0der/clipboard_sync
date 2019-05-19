@@ -1,13 +1,13 @@
 # coding=utf-8
-from tkinter import *
+from tkinter import Tk, Entry, Button, Label, END, Listbox
 from sys import exit
-import socket
+from time import sleep
+from socket import socket
 import pickle
 import pyperclip
-import threading
-from time import sleep
+from threading import Thread
 
-sock = socket.socket()
+sock = socket()
 
 work_mode = "All-to-All"
 
@@ -121,7 +121,7 @@ def A_t_a_mode(event=0):
             all_to_all_send_recv()
             sleep(1)
 
-    work_thread = threading.Thread(target=thread_cycle)
+    work_thread = Thread(target=thread_cycle)
     work_thread.daemon = True
     root.destroy()
     window = Tk()
@@ -214,7 +214,7 @@ def server_sync(event=0):
             server_sync()
             sleep(1)
 
-    work_thread = threading.Thread(target=thread_cycle)
+    work_thread = Thread(target=thread_cycle)
     root.destroy()
     window = Tk()
     window.resizable(False,False)
@@ -308,7 +308,7 @@ def all_sync(event=0):
             all_sync()
             sleep(1)
 
-    work_thread = threading.Thread(target=thread_cycle)
+    work_thread = Thread(target=thread_cycle)
     root.destroy()
     window = Tk()
     window.resizable(False, False)

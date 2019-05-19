@@ -1,13 +1,13 @@
 # coding=utf-8
-from tkinter import *
+from tkinter import Tk, Entry, Button, Label, END, Listbox
 from sys import exit
 from time import sleep
-import socket
+from socket import socket
 import pickle
 import pyperclip
-import threading
+from threading import Thread
 
-sock = socket.socket()
+sock = socket()
 
 old_clip = None
 
@@ -127,7 +127,7 @@ def GUI_all_to_all_mode(ev):
         all_to_all_send_recv_client()
         sleep(0.1)
 
-    work_thread = threading.Thread(target=work_cycle)
+    work_thread = Thread(target=work_cycle)
     work_thread.daemon = True
 
     window = Tk()
@@ -217,7 +217,7 @@ def GUI_S_S_mode(ev):
         work_thread.start()
         status_label["text"] = "Connected!"
 
-    work_thread = threading.Thread(target=work_cycle)
+    work_thread = Thread(target=work_cycle)
     work_thread.daemon = True
 
     window = Tk()
@@ -316,7 +316,7 @@ def GUI_A_S_mode(ev):
         work_thread.start()
         status_label["text"] = "Connected!"
 
-    work_thread = threading.Thread(target=work_cycle)
+    work_thread = Thread(target=work_cycle)
     work_thread.daemon = True
 
     window = Tk()
