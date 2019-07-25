@@ -57,8 +57,10 @@ class Client():
         if not data:
             return
         if data[-1] == "clip":
+            print("recived clip")
             self.recived_clip = data[0]
         elif data[-1] == "request":
+            print("recived reqest")
             self.request = data[0]
         else:
             self.user_list = data[0]
@@ -91,3 +93,5 @@ if __name__ == '__main__':
     addres = ""
     port = 9090
     obj = All_sync(nickname=name, port=port, ip=addres)
+    while True:
+        obj.update()
