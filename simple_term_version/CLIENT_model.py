@@ -2,11 +2,12 @@
 import socket
 import pickle
 import pyperclip
-import threading
+# import threading
 from time import sleep
 
 
 class Client():
+
 
     user_list = None
 
@@ -47,7 +48,7 @@ class Client():
             except EOFError:
                 return False
             except pickle.UnpicklingError:
-                print("recived part")  # DEBUG print
+                #print("recived part") # DEBUG #print
                 continue
         return data
 
@@ -56,10 +57,11 @@ class Client():
         if not data:
             return
         if data[-1] == "clip":
-            print("recived clip")
+            #print("recived clip")
             self.recived_clip = data[0]
+            #print(self.recived_clip)
         elif data[-1] == "request":
-            print("recived reqest")
+            #print("recived reqest")
             self.request = data[0]
         else:
             self.user_list = data[0]
@@ -69,27 +71,32 @@ class Client():
         sleep(timeout)
 
 
+
 class All_sync(Client):
 
     def update(self, timeout=0.1):
         super().update(timeout)
         clip = self.get_clip()
         if self.clip != clip:
+            self.clip = clip
             self.sock.send(pickle.dumps((self.clip, "clip")))
         if self.recived_clip:
+            #print("clip ch")
             self.set_clip(self.recived_clip)
             self.clip = self.recived_clip
             self.recived_clip = False
 
 
+#print("send my clip")
+
 if __name__ == '__main__':
-    # name = input("| Name>>>")
-    # addres = input("| ip>>>")
-    # port = int(input("| Port>>>"))
+    name = input("| Name>>>")
+    addres = input("| ip>>>")
+    port = int(input("| Port>>>"))
     # obj = All_sync(nickname=name, port=port, ip=addres)
-    name = "me"
-    addres = ""
-    port = 9090
+    # name = "me"
+    # addres = "10.21.51.153"
+    # port = 9090
     obj = All_sync(nickname=name, port=port, ip=addres)
     while True:
         obj.update()
