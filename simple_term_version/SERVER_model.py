@@ -2,7 +2,7 @@
 import socket
 import pickle
 import pyperclip
-import threading
+# import threading
 from time import sleep
 
 
@@ -35,7 +35,7 @@ class Server():
         except:
             return
         name = pickle.loads(conn.recv(1024))
-        print(name, " connected")
+        #print(name, " connected")
         # conn.send(pickle.dumps(self.work_mode))
         conn.settimeout(client_timeout)
         self.clients[name] = conn
@@ -61,7 +61,7 @@ class Server():
             except EOFError:
                 return False
             except pickle.UnpicklingError:
-                print("recive part only") # For debugging)
+                #print("recive part only") # For debugging)
                 continue
         return data
 
@@ -71,11 +71,12 @@ class Server():
             if not data:
                 continue
             if data[-1] == "clip":
-                print("recived clip", i)
+                #print("recived clip", i)
                 self.client_clip = data[0]
                 self.clip_user = i
+                #print("clip:", self.client_clip)
             elif data[-1] == "request":
-                print("recived_request", i)
+                #print("recived_request", i)
                 self.request = data[0]
                 self.request_user = i
 
@@ -93,14 +94,19 @@ class All_sync(Server):
             super().update(timeout)
             clip = self.get_clip()
             if clip != self.clip:
-                for i in self.clients:
-                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
                 self.clip = clip
+                for i in self.clients:
+                    #print("send my clip")
+                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
             if self.client_clip:
 
                 self.clip = self.client_clip
+                #print("clip ch")
                 self.set_clip(self.client_clip)
-                for i in self.clients.keys().remove(self.clip_user):
+                prelist = list(self.clients.keys())
+                prelist.remove(self.clip_user)
+                for i in prelist:
+                    #print("resend user clip")
                     self.clients[i].send(pickle.dumps((self.clip, "clip")))
                 self.client_clip = False
 
@@ -109,9 +115,9 @@ class All_sync(Server):
 if __name__ == '__main__':
 #     name = input("| Name>>>")
 #     # addres = input("| ip>>>")
-#     port = int(input("| Port>>>"))
-#     obj = All_sync(nickname=name, port=port)
-    port = 9090
+    port = int(input("| Port>>>"))
     obj = All_sync(port=port)
+#     port = 9090
+#     obj = All_sync(port=port)
     while True:
         obj.update(0.1)

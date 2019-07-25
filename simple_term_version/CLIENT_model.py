@@ -8,7 +8,6 @@ from time import sleep
 
 class Client():
 
-
     user_list = None
 
     recived_clip = None
@@ -48,7 +47,7 @@ class Client():
             except EOFError:
                 return False
             except pickle.UnpicklingError:
-                print("recived part") # DEBUG print
+                print("recived part")  # DEBUG print
                 continue
         return data
 
@@ -68,7 +67,6 @@ class Client():
     def update(self, timeout=0.1):
         self._recive_client_controller()
         sleep(timeout)
-
 
 
 class All_sync(Client):
