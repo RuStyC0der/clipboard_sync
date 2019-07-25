@@ -8,7 +8,6 @@ from time import sleep
 
 class Client():
 
-    work_mode = None
 
     user_list = None
 
@@ -26,7 +25,6 @@ class Client():
         self.sock.settimeout(0.1)
 
         self.clip = None
-        self.old_clip = pyperclip.paste()
 
         self.nickname = nickname
 
@@ -65,57 +63,31 @@ class Client():
         else:
             self.user_list = data[0]
 
-    def start(self, timeout=0.1):
-        self.controller_work_flag = True
-        self.timeout = timeout
+    def update(self, timeout=0.1):
+        self._recive_client_controller()
+        sleep(timeout)
 
-        def rec():
-            while self.controller_work_flag:
-                self.recive_server_controller()
-                sleep(self.timeout)
-
-        thread = threading.Thread(target=rec)
-        thread.daemon = True
-        thread.start()
-
-    def stop(self):
-        self.controller_work_flag = False
-
-    def destroy(self):
-        self.controller_work_flag = False
-        sleep(0.1)
-        self.sock.close()
 
 
 class All_sync(Client):
 
-    work_mode = "all_sync"
-
-    def start(self, timeout):
-        super().start(timeout)
-
-        def rec():
-            while self.controller_work_flag:
-                self.clip = self.get_clip()
-                if self.clip != self.old_clip:
-                    self.old_clip = self.clip
-                    self.sock.send(pickle.dumps((self.clip, "clip")))
-                if self.recived_clip:
-                    self.set_clip(self.recived_clip)
-                    self.old_clip = self.recived_clip
-                    self.clip = self.recived_clip
-                    self.recived_clip = False
-
-        thread = threading.Thread(target=rec)
-        thread.daemon = True
-        thread.start()
+    def update(self, timeout=0.1):
+        super().update(timeout)
+        clip = self.get_clip()
+        if self.clip != clip:
+            self.sock.send(pickle.dumps((self.clip, "clip")))
+        if self.recived_clip:
+            self.set_clip(self.recived_clip)
+            self.clip = self.recived_clip
+            self.recived_clip = False
 
 
 if __name__ == '__main__':
-    name = input("| Name>>>")
-    addres = input("| ip>>>")
-    port = int(input("| Port>>>"))
+    # name = input("| Name>>>")
+    # addres = input("| ip>>>")
+    # port = int(input("| Port>>>"))
+    # obj = All_sync(nickname=name, port=port, ip=addres)
+    name = "me"
+    addres = ""
+    port = 9090
     obj = All_sync(nickname=name, port=port, ip=addres)
-    z = input("| to exit type anythink>>>")
-    if z:
-        obj.destroy()

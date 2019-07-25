@@ -20,15 +20,12 @@ class Server():
     controller_work_flag = False
 
     # Create server with socket obl.
-    def __init__(self, nickname, port=9090, ip="", listen=1):
+    def __init__(self, port=9090, ip="", listen=1):
         self.sock = socket.socket()
         self.sock.bind((ip, port))
         self.sock.listen(listen)
 
-        self.nickname = nickname
-
         self.clip = None
-        self.old_clip = pyperclip.paste()
 
     def add_client(self, timeout=0.01, client_timeout=0.1):
         self.sock.settimeout(timeout)  # wait timeout to connect user
@@ -82,60 +79,39 @@ class Server():
                 self.request = data[0]
                 self.request_user = i
 
-    def start(self, timeout=0.1):
-        self.controller_work_flag = True
-        self.timeout = timeout
-
-        def rec():
-            while self.controller_work_flag:
-                self.add_client()
-                self._recive_server_controller()
-                sleep(self.timeout)
-
-        thread = threading.Thread(target=rec)
-        thread.daemon = True
-        thread.start()
-
-    def stop(self):
-        self.controller_work_flag = False
-
-    def destroy(self):
-        self.controller_work_flag = False
-        sleep(0.1)
-        self.sock.close()
+    def update(self, timeout=0.1):
+            self.add_client()
+            self._recive_server_controller()
+            sleep(timeout)
 
 
 class All_sync(Server):
 
     work_mode = "all_sync"
 
-    def start(self, timeout):
-        super().start(timeout)
+    def update(self, timeout=0.1):
+            super().update(timeout)
+            clip = self.get_clip()
+            if clip != self.clip:
+                for i in self.clients:
+                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
+                self.clip = clip
+            if self.client_clip:
 
-        def rec():
-            while self.controller_work_flag:
-                self.clip = self.get_clip()
-                if self.old_clip != self.clip:
-                    for i in self.clients:
-                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
-                    self.old_clip = self.clip
-                if self.client_clip:
-                    self.old_clip = self.client_clip
-                    self.clip = self.client_clip
-                    self.set_clip(self.client_clip)
-                    for i in self.clients.keys().remove(self.clip_user):
-                        self.clients[i].send(pickle.dumps((self.clip, "clip")))
-        thread = threading.Thread(target=rec)
-        thread.daemon = True
-        thread.start()
+                self.clip = self.client_clip
+                self.set_clip(self.client_clip)
+                for i in self.clients.keys().remove(self.clip_user):
+                    self.clients[i].send(pickle.dumps((self.clip, "clip")))
+                self.client_clip = False
+
 
 
 if __name__ == '__main__':
-    name = input("| Name>>>")
-    # addres = input("| ip>>>")
-    port = int(input("| Port>>>"))
-    obj = All_sync(nickname=name, port=port)
-    obj.start(0.1)
-    z = input("| to exit type anythink>>>")
-    if z:
-        obj.destroy()
+#     name = input("| Name>>>")
+#     # addres = input("| ip>>>")
+#     port = int(input("| Port>>>"))
+#     obj = All_sync(nickname=name, port=port)
+    port = 9090
+    obj = All_sync(port=port)
+    while True:
+        obj.update(0.1)
